@@ -56,16 +56,16 @@ jobs:
         
     - name: Update and install feeds
       run: |
-        set -euo pipefail
+        set -uo pipefail
         cd $OPENWRT_PATH
         
         # Try to update all feeds (may fail due to network issues)
-        ./scripts/feeds update -a || echo "Initial feed update encountered errors, will retry missing feeds"
+        ./scripts/feeds update -a || echo "Initial feed update encountered errors, will retry routing and telephony feeds"
         ./scripts/feeds install -a || echo "Initial feed install encountered errors, will retry"
         
         # Check if routing or telephony feeds are missing and explicitly update them
         if [ ! -d "feeds/routing" ] || [ ! -d "feeds/telephony" ]; then
-          echo "Missing feeds detected. Attempting explicit update..."
+          echo "Missing routing or telephony feeds detected. Attempting explicit update..."
           if [ ! -d "feeds/routing" ]; then
             echo "Updating routing feed explicitly..."
             ./scripts/feeds update routing || echo "Warning: routing feed update failed"
@@ -74,8 +74,8 @@ jobs:
             echo "Updating telephony feed explicitly..."
             ./scripts/feeds update telephony || echo "Warning: telephony feed update failed"
           fi
-          echo "Re-running feeds install..."
-          ./scripts/feeds install -a || echo "Warning: feed install failed"
+          echo "Re-running feeds install after explicit updates..."
+          ./scripts/feeds install -a || echo "Warning: feed install failed after retry"
         fi
         
         # Final verification - fail if feeds are still missing
