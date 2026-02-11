@@ -33,6 +33,39 @@
   </p>
 </div>
  
+# 🔥 Ready-to-Flash Firmware Binaries
+
+## ⚡ Quick Download
+
+**Pre-built firmware binaries are available in [`build/stock/`](build/stock/)**
+
+| Firmware | Size | Version | Download | Status |
+|----------|------|---------|----------|--------|
+| **V550ABOM3C0.bin** | 22MB | V5.50(ABOM.3)C0 | [Download](build/stock/V550ABOM3C0.bin) | ✅ **RECOMMENDED** |
+| **V550ABOM6C0.bin** | 27MB | V5.50(ABOM.6)C0 | [Download](build/stock/V550ABOM6C0.bin) | ⚪ Alternative |
+| **V550ABOM7C0.bin** | 32MB | V5.50(ABOM.7)C0 | [Download](build/stock/V550ABOM7C0.bin) | ⚪ Latest |
+
+### 📋 Checksums
+- **SHA256**: See [SHA256SUMS](build/stock/SHA256SUMS)
+- **MD5**: See [MD5SUMS](build/stock/MD5SUMS)
+
+### 🚀 How to Flash via TTL
+
+**Complete guide**: [FIRMWARE_FLASHING_GUIDE.md](FIRMWARE_FLASHING_GUIDE.md)
+
+**Quick steps**:
+1. Connect USB-TTL (3.3V) to router serial port
+2. Open terminal: `picocom -b 115200 /dev/ttyUSB0`
+3. Enter bootloader: Press any key when "Hit any key to stop autoboot" appears
+4. Disable model check: `ZHAL> atdc`
+5. Start upgrade: `ZHAL> atur V550ABOM3C0.bin`
+6. Transfer via TFTP: `atftp 192.168.1.1` → `put V550ABOM3C0.bin`
+7. Wait for completion and reboot
+
+**⚠️ IMPORTANT**: Use 3.3V TTL adapter only (NOT 5V)!
+
+---
+
 # Firmware
 ```diff
 + VMG8825-T50K_5.50(ABOM.3) -> ftp://ftp.zyxel.com/VMG8825-T50K/firmware/VMG8825-T50K_5.50(ABOM.3)C0.zip
