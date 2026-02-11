@@ -1,0 +1,45 @@
+# Build artifacts and temporary files
+/openwrt-build/
+/bin/
+/build_dir/
+/staging_dir/
+/tmp/
+/logs/
+*.o
+*.ko
+*.a
+*.so
+*.so.*
+*.la
+*.log
+
+# OpenWrt specific
+/dl/
+/feeds/
+/.ccache/
+/.config.old
+/files/
+
+# Editor and IDE files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-*
+
+# OS specific
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Compiled Python files
+*.pyc
+*.pyo
+__pycache__/
+
+# Node modules (if any)
+node_modules/
+
+# Keep the custom .config for build configuration
+!/.config

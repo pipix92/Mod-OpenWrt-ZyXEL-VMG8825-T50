@@ -1,0 +1,211 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	compatible = "zyxel,vmg8825-t50", "econet,en7516";
+	model = "Zyxel VMG8825-T50";
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "mips,mips1004Kc";
+			reg = <0>;
+		};
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x00000000 0x10000000>; /* 256MB */
+	};
+
+	chosen {
+		bootargs = "console=ttyS0,115200";
+	};
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	cpuintc: cpuintc {
+		#address-cells = <0>;
+		#interrupt-cells = <1>;
+		interrupt-controller;
+		compatible = "mti,cpu-interrupt-controller";
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		uart0: serial@bfbf0003 {
+			compatible = "ns16550a";
+			reg = <0xbfbf0003 0x20>;
+			interrupt-parent = <&cpuintc>;
+			interrupts = <3>;
+			clock-frequency = <125000000>;
+			reg-shift = <2>;
+			reg-io-width = <1>;
+			no-loopback-test;
+		};
+
+		/* USB 2.0 Controller */
+		usb2: usb@bfb00000 {
+			compatible = "econet,en7516-usb2", "generic-ehci";
+			reg = <0xbfb00000 0x1000>;
+			interrupt-parent = <&cpuintc>;
+			interrupts = <5>;
+			status = "okay";
+			
+			/* USB 2.0 power management */
+			power-domains = <&usb2_power>;
+			
+			/* USB 2.0 port configuration */
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				
+				port@1 {
+					reg = <1>;
+					status = "okay";
+				};
+			};
+		};
+
+		/* USB 3.0 Controller */
+		usb3: usb@bfb80000 {
+			compatible = "econet,en7516-usb3", "generic-xhci";
+			reg = <0xbfb80000 0x1000>;
+			interrupt-parent = <&cpuintc>;
+			interrupts = <6>;
+			status = "okay";
+			
+			/* USB 3.0 power management */
+			power-domains = <&usb3_power>;
+			
+			/* USB 3.0 port configuration */
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				
+				port@0 {
+					reg = <0>;
+					status = "okay";
+				};
+			};
+		};
+
+		/* USB Power Management */
+		usb2_power: power-controller@bfa20000 {
+			compatible = "econet,en7516-power";
+			reg = <0xbfa20000 0x1000>;
+			#power-domain-cells = <0>;
+		};
+
+		usb3_power: power-controller@bfa21000 {
+			compatible = "econet,en7516-power";
+			reg = <0xbfa21000 0x1000>;
+			#power-domain-cells = <0>;
+		};
+
+		gpio: gpio@bfa20100 {
+			compatible = "econet,en7516-gpio";
+			reg = <0xbfa20100 0x100>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			ngpios = <32>;
+		};
+
+		/* Ethernet */
+		ethernet@bfb50000 {
+			compatible = "econet,en7516-eth";
+			reg = <0xbfb50000 0x10000>;
+			interrupt-parent = <&cpuintc>;
+			interrupts = <4>;
+		};
+
+		/* SPI */
+		spi@bfb40000 {
+			compatible = "econet,en7516-spi";
+			reg = <0xbfb40000 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			
+			flash@0 {
+				compatible = "jedec,spi-nor";
+				reg = <0>;
+				spi-max-frequency = <25000000>;
+				
+				partitions {
+					compatible = "fixed-partitions";
+					#address-cells = <1>;
+					#size-cells = <1>;
+					
+					partition@0 {
+						label = "u-boot";
+						reg = <0x000000 0x040000>;
+						read-only;
+					};
+					
+					partition@40000 {
+						label = "u-boot-env";
+						reg = <0x040000 0x010000>;
+					};
+					
+					partition@50000 {
+						label = "firmware";
+						reg = <0x050000 0xfb0000>;
+					};
+				};
+			};
+		};
+	};
+
+	/* LEDs */
+	leds {
+		compatible = "gpio-leds";
+		
+		power {
+			label = "vmg8825-t50:green:power";
+			gpios = <&gpio 0 0>;
+			default-state = "on";
+		};
+		
+		internet {
+			label = "vmg8825-t50:green:internet";
+			gpios = <&gpio 1 0>;
+		};
+		
+		wifi {
+			label = "vmg8825-t50:green:wifi";
+			gpios = <&gpio 2 0>;
+		};
+		
+		usb {
+			label = "vmg8825-t50:green:usb";
+			gpios = <&gpio 3 0>;
+		};
+	};
+
+	/* GPIO Keys */
+	keys {
+		compatible = "gpio-keys";
+		
+		reset {
+			label = "reset";
+			linux,code = <0x198>; /* KEY_RESTART */
+			gpios = <&gpio 10 1>;
+		};
+		
+		wps {
+			label = "wps";
+			linux,code = <0x211>; /* KEY_WPS_BUTTON */
+			gpios = <&gpio 11 1>;
+		};
+	};
+};
