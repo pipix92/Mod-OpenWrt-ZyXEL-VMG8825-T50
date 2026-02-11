@@ -52,6 +52,7 @@ OPT_RM_QUOTES=`grep "^CONFIG_${CFG_PREFIX}_RM_QUOTES_" $OPENWRT_CFG_FILE | sed "
 # remove quotes
 if [ -n "$OPT_RM_QUOTES" ]; then
 	# Build a sed script to remove quotes in a single pass
+	# Note: Assumes option names are alphanumeric identifiers (no special regex chars)
 	sed_script=""
 	for i in $OPT_RM_QUOTES; do
 		sed_script="${sed_script}/\\b$i\\b/s/\"//g;"

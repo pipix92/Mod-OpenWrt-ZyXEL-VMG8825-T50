@@ -31,6 +31,7 @@ OPT_RM_QUOTES=`grep "CONFIG_BRCM${BRCM_VER}_RM_QUOTES_" $1 | sed "s/^CONFIG_BRCM
 # remove quotes
 if [ -n "$OPT_RM_QUOTES" ]; then
 	# Build a sed script to remove quotes in a single pass
+	# Note: Assumes option names are alphanumeric identifiers (no special regex chars)
 	sed_script=""
 	for i in $OPT_RM_QUOTES; do
 		sed_script="${sed_script}/\\b$i\\b/s/\"//g;"
