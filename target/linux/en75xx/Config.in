@@ -1,0 +1,10 @@
+config TARGET_en75xx
+	bool "EcoNet EN75xx (EN7516 SoC)"
+	select ARCH_BIG_ENDIAN
+	select ARCH_HAS_RESET_CONTROLLER
+	select GPIO_EXTRA
+	select HAS_FPU
+	select USE_OF
+	help
+	  Build firmware for EcoNet EN75xx SoC devices (EN7516).
+	  MIPS 1004Kc Big Endian architecture.
