@@ -58,3 +58,32 @@
 # script auto build openwrt
 # qemu code generator
 ```
+
+## 🎉 Latest Update - OpenWrt Build System Ready!
+
+**Status: ✅ WORKING** - The repository now has a fully functional OpenWrt build system!
+
+### What's New (February 2026)
+- ✅ **GitHub Actions Fixed**: Updated to non-deprecated action versions (v4)
+- ✅ **Complete Target Configuration**: EN75xx target with EN751627 subtarget
+- ✅ **USB 2.0 & 3.0 Enabled**: Full power management in device tree
+- ✅ **Wireless Drivers**: RTL8187, RT2800-USB, MT76 for USB WiFi adapters
+- ✅ **WISP/Relay Support**: relayd and luci-proto-relay included
+- ✅ **Automated Builds**: GitHub Actions workflow ready to build firmware
+
+### Quick Start
+1. **Trigger Build**: Go to Actions tab and run "Build OpenWrt Firmware" workflow
+2. **Wait**: Build takes ~2-3 hours
+3. **Download**: Get firmware from Releases or Actions artifacts
+4. **Flash**: Use the `.bin` file to flash your VMG8825-T50
+
+### Documentation
+- 📖 [Build Guide](BUILD_GUIDE.md) - Complete build instructions
+- 🔧 [Workflow Fix Details](WORKFLOW_FIX.md) - What was fixed and how
+- 📋 [Implementation Summary](IMPLEMENTATION_SUMMARY.md) - Technical details
+- ⚡ [Quick Reference](QUICK_REFERENCE.md) - Commands and configs
+
+### Supported USB WiFi Adapters
+- **Realtek**: Alfa AWUS036H, AWUS036NH
+- **Ralink**: Alfa AWUS036NEH (RT3070), RT5370, RT5572
+- **MediaTek**: Alfa AWUS036ACH (MT7610U), MT7612U
