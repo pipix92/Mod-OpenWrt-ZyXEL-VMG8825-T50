@@ -10,7 +10,7 @@ FILE_PATH_BUILD="./build_dir/target-*/ "
 FILE_PATH_PACKAGE="./package/ "
 FILE_PATH_CONFIG="./configs/"
 FWID_EXT="CONFIG_ZYXEL_FIRMWARE_VERSION"
-FW_VERSION=`cat .config | grep $FWID_EXT | awk -F"=" '{print $2}' | sed "s/\"//g" | sed "s/(//g" | sed "s/)//g" | sed "s/\.//g"`
+FW_VERSION=`grep $FWID_EXT .config | awk -F"=" '{print $2}' | sed 's/"//g; s/(//g; s/)//g; s/\.//g'`
 PROECT_PROFILE=""
 MD5_INPUT_FILE=""
 MD5_OUTPUT_FILE="md5sum_$FW_VERSION.txt"
@@ -104,7 +104,7 @@ echo "$ALL_FILES" >> all_files.txt
 cp all_files.txt filter_files.txt
 for filter in $EXCLUDE_FILE_LIST
 do
-	cat filter_files.txt | grep -Fv $filter > tmp.txt
+	grep -Fv $filter filter_files.txt > tmp.txt
 	mv tmp.txt filter_files.txt
 done
 

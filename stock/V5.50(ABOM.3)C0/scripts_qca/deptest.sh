@@ -86,7 +86,7 @@ test_package() # $1=pkgname
 	[ -n "$pkg" -a -z "$(echo "$pkg" | grep -e '/')" -a "$pkg" != "." -a "$pkg" != ".." ] || \
 		die "Package name \"$pkg\" contains illegal characters"
 	local SELECTED=
-	for conf in `grep CONFIG_PACKAGE tmp/.packagedeps | grep -E "[ /]$pkg\$" | sed -e 's,package-$(\(CONFIG_PACKAGE_.*\)).*,\1,'`; do
+	for conf in `grep "CONFIG_PACKAGE.*[ /]$pkg\$" tmp/.packagedeps | sed -e 's,package-$(\(CONFIG_PACKAGE_.*\)).*,\1,'`; do
 		grep "$conf=" .config > /dev/null && SELECTED=1 && break
 	done
 	local STAMP_SUCCESS="$STAMP_DIR_SUCCESS/$pkg"
@@ -200,7 +200,7 @@ bootstrap_native_make()
 
 if [ -z "$packages" ]; then
 	# iterate over all packages
-	for pkg in `cat tmp/.packagedeps  | grep CONFIG_PACKAGE | grep -v curdir | sed -e 's,.*[/=]\s*,,' | sort -u`; do
+	for pkg in `grep CONFIG_PACKAGE tmp/.packagedeps | grep -v curdir | sed -e 's,.*[/=]\s*,,' | sort -u`; do
 		test_package "$pkg"
 	done
 else

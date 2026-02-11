@@ -41,22 +41,23 @@ echo -e "# `date`\n#\n" >> $VENDOR_CFG_FILE
 # 1. using 'grep' to filter the vendor configurations which prefix is "CONFIG_${CFG_PREFIX}_"
 if [ "$REMOVE_PREFIX_CONFIG" = "y" ]; then
 # 2. using 'sed' to remove prefix 'CONFIG_${CFG_PREFIX}_
-cat $OPENWRT_CFG_FILE | grep "CONFIG_${CFG_PREFIX}_" | grep -v "CONFIG_${CFG_PREFIX}_RM_QUOTES_" | sed "s/CONFIG_${CFG_PREFIX}_//" >> $VENDOR_CFG_FILE
+grep "CONFIG_${CFG_PREFIX}_" $OPENWRT_CFG_FILE | grep -v "CONFIG_${CFG_PREFIX}_RM_QUOTES_" | sed "s/CONFIG_${CFG_PREFIX}_//" >> $VENDOR_CFG_FILE
 else
 # 2. using 'sed' to remove prefix '${CFG_PREFIX}_
-cat $OPENWRT_CFG_FILE | grep "CONFIG_${CFG_PREFIX}_" | grep -v "CONFIG_${CFG_PREFIX}_RM_QUOTES_" | sed "s/${CFG_PREFIX}_//" >> $VENDOR_CFG_FILE
+grep "CONFIG_${CFG_PREFIX}_" $OPENWRT_CFG_FILE | grep -v "CONFIG_${CFG_PREFIX}_RM_QUOTES_" | sed "s/${CFG_PREFIX}_//" >> $VENDOR_CFG_FILE
 fi
 
 # To collect options which need to remove quotes
-OPT_RM_QUOTES=`cat $OPENWRT_CFG_FILE | grep "^CONFIG_${CFG_PREFIX}_RM_QUOTES_" | sed "s/${CFG_PREFIX}_RM_QUOTES_//" | sed "s/=y//"`
+OPT_RM_QUOTES=`grep "^CONFIG_${CFG_PREFIX}_RM_QUOTES_" $OPENWRT_CFG_FILE | sed "s/${CFG_PREFIX}_RM_QUOTES_//; s/=y//"`
 # remove quotes
-for i in $OPT_RM_QUOTES; do
-#echo "search '$i'"; sed -n "/\b$i\b/p" $2
-old=`sed -n "/\b$i\b/p" $VENDOR_CFG_FILE`
-new=`echo $old | sed "s/\"//g"`
-#echo "old=$old";echo "new=$new";echo
-sed -i "s/$old/$new/g" $VENDOR_CFG_FILE
-done
+if [ -n "$OPT_RM_QUOTES" ]; then
+	# Build a sed script to remove quotes in a single pass
+	sed_script=""
+	for i in $OPT_RM_QUOTES; do
+		sed_script="${sed_script}/\\b$i\\b/s/\"//g;"
+	done
+	sed -i "$sed_script" $VENDOR_CFG_FILE
+fi
 
 
 # create C style header file
