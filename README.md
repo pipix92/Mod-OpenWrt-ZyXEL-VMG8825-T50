@@ -51,7 +51,13 @@
 
 ### 🚀 How to Flash via TTL
 
-**Complete guide**: [FIRMWARE_FLASHING_GUIDE.md](FIRMWARE_FLASHING_GUIDE.md)
+**🎯 ONE-COMMAND PREPARATION**:
+```bash
+./prepare-flash.sh    # Automated system check & preparation
+./verify-firmware.sh  # Verify firmware integrity
+```
+
+**Complete guide**: [FIRMWARE_FLASHING_GUIDE.md](FIRMWARE_FLASHING_GUIDE.md) | **Quick reference**: [TTL_FLASH_QUICK_REFERENCE.md](TTL_FLASH_QUICK_REFERENCE.md)
 
 **Quick steps**:
 1. Connect USB-TTL (3.3V) to router serial port
