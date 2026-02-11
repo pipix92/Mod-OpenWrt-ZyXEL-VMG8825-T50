@@ -56,7 +56,7 @@ jobs:
         
     - name: Update and install feeds
       run: |
-        set -uo pipefail
+        set -u
         cd $OPENWRT_PATH
         
         # Try to update all feeds (may fail due to network issues)
