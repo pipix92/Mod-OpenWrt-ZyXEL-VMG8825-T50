@@ -255,7 +255,7 @@ echo -e "   Or:  ${BLUE}TTL_FLASH_QUICK_REFERENCE.md${NC}"
 echo -e "\n${YELLOW}5.${NC} Flash procedure:"
 echo -e "   - Boot router and enter ZHAL bootloader"
 echo -e "   - Run: ${GREEN}ZHAL> atdc${NC} (disable model check)"
-echo -e "   - Run: ${GREEN}ZHAL> atur $RECOMMENDED_FIRMWARE${NC}"
+echo -e "   - Run: ${GREEN}ZHAL> atur V550ABOM3C0.bin${NC}"
 echo -e "   - Transfer via TFTP from another terminal"
 
 echo -e "\n${BLUE}═══════════════════════════════════════════════════════════════${NC}"

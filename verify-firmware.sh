@@ -70,7 +70,11 @@ for fw in "${FIRMWARE_FILES[@]}"; do
     
     # File size
     SIZE=$(du -h "$fw" | cut -f1)
-    SIZE_BYTES=$(stat -f%z "$fw" 2>/dev/null || stat -c%s "$fw" 2>/dev/null)
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        SIZE_BYTES=$(stat -f%z "$fw" 2>/dev/null)
+    else
+        SIZE_BYTES=$(stat -c%s "$fw" 2>/dev/null)
+    fi
     echo -e "  ${GREEN}✓${NC} Size: ${SIZE} (${SIZE_BYTES} bytes)"
     
     # Calculate checksums
