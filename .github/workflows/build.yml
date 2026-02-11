@@ -61,7 +61,7 @@ jobs:
         
         # Try to update all feeds (may fail due to network issues)
         ./scripts/feeds update -a || echo "Initial feed update encountered errors, will retry routing and telephony feeds"
-        ./scripts/feeds install -a || echo "Initial feed install encountered errors, will retry"
+        ./scripts/feeds install -a || echo "Initial feed install encountered errors, continuing to check for missing feeds"
         
         # Check if routing or telephony feeds are missing and explicitly update them
         if [ ! -d "feeds/routing" ] || [ ! -d "feeds/telephony" ]; then
@@ -79,8 +79,15 @@ jobs:
         fi
         
         # Final verification - fail if feeds are still missing
-        echo "Verifying feeds directories..."
-        ls feeds/routing feeds/telephony
+        echo "Verifying critical feeds directories..."
+        if [ ! -d "feeds/routing" ] || [ ! -d "feeds/telephony" ]; then
+          echo "Error: Critical feeds (routing and/or telephony) are missing after all retry attempts"
+          echo "Missing feeds:"
+          [ ! -d "feeds/routing" ] && echo "  - routing"
+          [ ! -d "feeds/telephony" ] && echo "  - telephony"
+          exit 1
+        fi
+        echo "All critical feeds verified successfully"
         
     - name: Copy custom target configuration
       run: |
