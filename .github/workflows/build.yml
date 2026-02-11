@@ -60,7 +60,7 @@ jobs:
         cd $OPENWRT_PATH
         
         # Try to update all feeds (may fail due to network issues)
-        ./scripts/feeds update -a || echo "Initial feed update encountered errors, will retry routing and telephony feeds"
+        ./scripts/feeds update -a || echo "Initial feed update encountered errors, continuing to check for missing feeds"
         ./scripts/feeds install -a || echo "Initial feed install encountered errors, continuing to check for missing feeds"
         
         # Check if routing or telephony feeds are missing and explicitly update them
