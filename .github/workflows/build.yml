@@ -66,11 +66,11 @@ jobs:
           echo "Missing feeds detected. Attempting explicit update..."
           if [ ! -d "feeds/routing" ]; then
             echo "Updating routing feed explicitly..."
-            ./scripts/feeds update routing || echo "Warning: routing feed update failed"
+            ./scripts/feeds update routing || true
           fi
           if [ ! -d "feeds/telephony" ]; then
             echo "Updating telephony feed explicitly..."
-            ./scripts/feeds update telephony || echo "Warning: telephony feed update failed"
+            ./scripts/feeds update telephony || true
           fi
           echo "Re-running feeds install..."
           ./scripts/feeds install -a
