@@ -56,9 +56,29 @@ jobs:
         
     - name: Update and install feeds
       run: |
+        set -euo pipefail
         cd $OPENWRT_PATH
         ./scripts/feeds update -a
         ./scripts/feeds install -a
+        
+        # Check if routing or telephony feeds are missing and explicitly update them
+        if [ ! -d "feeds/routing" ] || [ ! -d "feeds/telephony" ]; then
+          echo "Missing feeds detected. Attempting explicit update..."
+          if [ ! -d "feeds/routing" ]; then
+            echo "Updating routing feed explicitly..."
+            ./scripts/feeds update routing || echo "Warning: routing feed update failed"
+          fi
+          if [ ! -d "feeds/telephony" ]; then
+            echo "Updating telephony feed explicitly..."
+            ./scripts/feeds update telephony || echo "Warning: telephony feed update failed"
+          fi
+          echo "Re-running feeds install..."
+          ./scripts/feeds install -a
+        fi
+        
+        # Final verification - fail if feeds are still missing
+        echo "Verifying feeds directories..."
+        ls feeds/routing feeds/telephony
         
     - name: Copy custom target configuration
       run: |
