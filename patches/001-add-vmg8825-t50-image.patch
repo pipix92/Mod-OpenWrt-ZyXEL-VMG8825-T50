@@ -1,0 +1,16 @@
+--- a/target/linux/econet/image/en751627.mk
++++ b/target/linux/econet/image/en751627.mk
+@@ -9,3 +9,13 @@
+   DEVICE_PACKAGES := kmod-usb3 kmod-mt7915e kmod-mt7915-firmware
+ endef
+ TARGET_DEVICES += zyxel_ex3301-t0
++
++define Device/zyxel_vmg8825-t50
++  DEVICE_VENDOR := Zyxel
++  DEVICE_MODEL := VMG8825-T50
++  DEVICE_DTS := en751627_zyxel_vmg8825-t50
++  IMAGES := tclinux.trx
++  IMAGE/tclinux.trx := append-kernel | lzma | tclinux-trx
++  DEVICE_PACKAGES := kmod-usb2 kmod-usb-storage kmod-mt7615e kmod-mt7615-firmware
++endef
++TARGET_DEVICES += zyxel_vmg8825-t50

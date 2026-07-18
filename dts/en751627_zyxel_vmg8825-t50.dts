@@ -1,0 +1,186 @@
+// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+/dts-v1/;
+
+#include "en751627.dtsi"
+
+/ {
+	model = "Zyxel VMG8825-T50K";
+	compatible = "zyxel,vmg8825-t50k", "econet,en751627";
+
+	/*
+	 * RAM: 512 MB DDR3-1333 fisica (Winbond), ma dichiarare l'intero range
+	 * (0x0-0x1FFFFFFF) fa bloccare il kernel subito dopo "Readback ErrCtl
+	 * register", prima di "Built 1 zonelists" — confine esatto con la
+	 * finestra MMIO PCIe0 (0x20000000, vedi en751627.dtsi) e/o limite
+	 * reale del training DDR3 del bootloader vendor.
+	 * Il kernel stock ZyXEL (3.18.21) vedeva infatti solo 432MB usabili
+	 * (80MB riservati per DSP VoIP + buffer WiFi) su questo stesso hardware.
+	 * Replichiamo lo stesso limite, verificato reale, invece del totale.
+	 */
+	memory@0 {
+		device_type = "memory";
+		reg = <0x00000000 0x1b000000>;
+	};
+
+	chosen {
+		stdout-path = "/serial@1fbf0000:115200";
+		/*
+		 * "misc" (118MB, vendor scratch space non usato da OpenWrt) riusata
+		 * come volume UBI per l'overlay persistente. Il kernel ha gia'
+		 * CONFIG_MTD_UBI + CONFIG_UBIFS_FS abilitati (verificato in
+		 * target/linux/econet/en751627/config-6.18); JFFS2 invece non e'
+		 * compilato affatto (CONFIG_JFFS2_FS is not set), motivo per cui
+		 * senza UBI l'overlay cade sempre su tmpfs, ad ogni boot.
+		 * fstools (mount_root.c) cerca un VOLUME UBI chiamato "rootfs_data"
+		 * (non basta attaccare la partizione: va creato una volta con
+		 * "ubimkvol /dev/ubi0 -N rootfs_data -m" dalla shell live).
+		 */
+		bootargs = "ubi.mtd=misc";
+	};
+};
+
+&nand {
+	status = "okay";
+	econet,bmt;
+
+	/*
+	 * PARTITION TABLE ESATTA (confermata da /proc/mtd del kernel stock,
+	 * boot log VMG8825-T50K firmware V5.50(ABRN.0)b5_20190923):
+	 *
+	 *   0x00000000-0x00040000 : bootloader      (256 KB)  read-only
+	 *   0x00040000-0x00080000 : romfile         (256 KB)  read-only, contiene config vendor
+	 *   0x00080000-0x03880000 : tclinux         ( 56 MB)  OS primario  (slot A)
+	 *   0x03880000-0x06e80000 : tclinux_slave   ( 56 MB)  OS secondario (slot B)
+	 *   0x06e80000-0x06f80000 : wwan            (  1 MB)
+	 *   0x06f80000-0x07380000 : data            (  4 MB)
+	 *   0x07380000-0x07480000 : rom-d           (  1 MB)
+	 *   0x07480000-0x0ea80000 : misc            (118 MB)
+	 *   0x0ea80000-0x0eb40000 : reservearea     (768 KB)  contiene WiFi EEPROM+CALDATA
+	 *
+	 * NAND totale: 256 MB Winbond W25M02G (SPI-NAND SLC, 2K page + 64 OOB)
+	 *
+	 * NOTA: tclinux contiene kernel LZMA + rootfs SquashFS-LZMA concatenati.
+	 *       Il compatible "openwrt,firmware" abilita autodetect dei sub-blocchi.
+	 */
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0all {
+			label = "all_of_flash";
+			reg = <0x0 0x10000000>;
+			read-only;
+		};
+
+		partition@0 {
+			label = "bootloader";
+			reg = <0x00000000 0x00040000>;
+			read-only;
+		};
+
+		partition@40000 {
+			label = "romfile";
+			reg = <0x00040000 0x00040000>;
+			read-only;
+		};
+
+		/*
+		 * "compatible = openwrt,firmware" (usato in una revisione precedente)
+		 * non esiste in nessun driver reale: e' una stringa inerte, non fa nulla.
+		 * Il meccanismo vero (verificato in target/linux/econet/image/tclinux-trx.sh)
+		 * e' che la rootfs squashfs inizia SEMPRE a un offset fisso di 4MiB
+		 * (PAD_ROOTFS_OFFSET_TO) dall'inizio della partizione tclinux, esattamente
+		 * come fa il DTS di riferimento en751627_zyxel_ex3301-t0.dts (rootfs a
+		 * 0x480000 = 0x80000+0x400000). Serve una sotto-partizione esplicita con
+		 * "linux,rootfs;" perche' il kernel sappia dove montare la root.
+		 * NOTA: solo "tclinux" (main) ha la rootfs marcata — anche il device
+		 * di riferimento EX3301 fa cosi' (la sua "tclinux_alt" e' solo backup
+		 * grezzo, senza rootfs marcata). Percio' bisogna sempre assicurarsi che
+		 * lo slot "main" contenga l'immagine corretta.
+		 */
+		partition@80000 {
+			label = "tclinux";
+			reg = <0x00080000 0x03800000>;
+			econet,enable-remap;
+		};
+
+		partition@480000 {
+			label = "rootfs";
+			reg = <0x00480000 0x03400000>;
+			linux,rootfs;
+		};
+
+		partition@3880000 {
+			label = "tclinux_slave";
+			reg = <0x03880000 0x03600000>;
+			econet,enable-remap;
+		};
+
+		partition@6e80000 {
+			label = "wwan";
+			reg = <0x06e80000 0x00100000>;
+		};
+
+		partition@6f80000 {
+			label = "data";
+			reg = <0x06f80000 0x00400000>;
+		};
+
+		partition@7380000 {
+			label = "rom-d";
+			reg = <0x07380000 0x00100000>;
+		};
+
+		partition@7480000 {
+			label = "misc";
+			reg = <0x07480000 0x07600000>;
+		};
+
+		/*
+		 * "reservearea" tiene sia EEPROM sia CALDATA delle due radio MT7615.
+		 * Da boot log kernel stock, layout interno confermato:
+		 *   offset 0x00000  size 0x0400 (1KB)  : 2.4GHz EEPROM
+		 *   offset 0x01000  size 0x9000 (36KB) : 2.4GHz CALDATA
+		 *   offset 0x20000  size 0x0400 (1KB)  : 5GHz EEPROM
+		 *   offset 0x21000  size 0x9000 (36KB) : 5GHz CALDATA
+		 */
+		factory: partition@ea80000 {
+			label = "reservearea";
+			reg = <0x0ea80000 0x000c0000>;
+		};
+	};
+};
+
+/*
+ * WiFi: DUAL MediaTek MT7615 (2 chip fisici PCIe separati, non DBDC single-chip)
+ *   pcie0 -> radio 2.4GHz con iPA+iLNA integrati (EEPROM offset 0x0)
+ *   pcie1 -> radio 5GHz   con ePA+eLNA esterni   (EEPROM offset 0x20000)
+ *
+ * Il driver mt76 di OpenWrt (kernel 6.18) supporta MT7615 out-of-the-box.
+ */
+&pcie0 {
+	status = "okay";
+};
+
+&slot0 {
+	status = "okay";
+
+	wifi@0,0 {
+		compatible = "mediatek,mt76";
+		reg = <0x0000 0 0 0 0>;
+		mediatek,mtd-eeprom = <&factory 0x0000>;
+		big-endian;
+	};
+};
+
+&pcie1 {
+	status = "okay";
+
+	wifi@0,0 {
+		compatible = "mediatek,mt76";
+		reg = <0x0000 0 0 0 0>;
+		mediatek,mtd-eeprom = <&factory 0x20000>;
+		big-endian;
+	};
+};
